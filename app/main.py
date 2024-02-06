@@ -1,15 +1,21 @@
 # -*- coding: utf-8 -*-
+import os
 import re
 
 import requests
 from flask import Flask, Response, redirect, request
 from requests.exceptions import (
     ChunkedEncodingError,
-    ContentDecodingError, ConnectionError, StreamConsumedError)
+    ConnectionError,
+    ContentDecodingError,
+    StreamConsumedError,
+)
 from requests.utils import (
-    stream_decode_response_unicode, iter_slices, CaseInsensitiveDict)
-from urllib3.exceptions import (
-    DecodeError, ReadTimeoutError, ProtocolError)
+    CaseInsensitiveDict,
+    iter_slices,
+    stream_decode_response_unicode,
+)
+from urllib3.exceptions import DecodeError, ProtocolError, ReadTimeoutError
 
 # config
 # 分支文件使用jsDelivr镜像的开关，0为关闭，默认关闭
@@ -34,6 +40,7 @@ pass_list = '''
 HOST = '127.0.0.1'  # 监听地址，建议监听本地然后由web服务器反代
 PORT = 80  # 监听端口
 ASSET_URL = 'https://hunshcn.github.io/gh-proxy'  # 主页
+skip_check = os.environ.get('SKIP_CHECK', '') == 'true'
 
 white_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in white_list.split('\n') if i]
 black_list = [tuple([x.replace(' ', '') for x in i.split('/')]) for i in black_list.split('\n') if i]
@@ -120,7 +127,7 @@ def handler(u):
         u = u.replace('s:/', 's://', 1)  # uwsgi会将//传递为/
     pass_by = False
     m = check_url(u)
-    if m:
+    if m and not skip_check:
         m = tuple(m.groups())
         if white_list:
             for i in white_list:
@@ -135,7 +142,7 @@ def handler(u):
             if m[:len(i)] == i or i[0] == '*' and len(m) == 2 and m[1] == i[1]:
                 pass_by = True
                 break
-    else:
+    elif not skip_check:
         return Response('Invalid input.', status=403)
 
     if (jsdelivr or pass_by) and exp2.match(u):

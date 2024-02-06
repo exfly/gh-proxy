@@ -2,7 +2,7 @@ FROM guysoft/uwsgi-nginx:python3.7
 
 LABEL maintainer="hunshcn <hunsh.cn@gmail.com>"
 
-RUN pip install flask requests
+RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple flask requests
 
 COPY ./app /app
 WORKDIR /app
