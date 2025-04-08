@@ -7,6 +7,7 @@ mkdir -p /data/cache
 
 # Get the listen port for Nginx, default to 80
 USE_LISTEN_PORT=${LISTEN_PORT:-80}
+USE_CACHE_VALID_200=${CACHE_VALID_200:-'600s'}
 
 if [ -f /app/nginx.conf ]; then
     cp /app/nginx.conf /etc/nginx/nginx.conf
@@ -27,7 +28,7 @@ else
     content_server=$content_server'        uwsgi_cache my_cache;\n'
     content_server=$content_server'        uwsgi_cache_bypass 0;\n'
     content_server=$content_server'        uwsgi_cache_use_stale error timeout updating http_500;\n'
-    content_server=$content_server'        uwsgi_cache_valid 200 120s;\n'
+    content_server=$content_server"        uwsgi_cache_valid 200 ${USE_CACHE_VALID_200};\n"
     content_server=$content_server'        uwsgi_cache_key $scheme$host$request_uri;\n'
     content_server=$content_server'    }\n'
     content_server=$content_server'}\n'
